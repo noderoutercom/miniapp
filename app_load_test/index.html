@@ -1,0 +1,186 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Load Test</title>
+    <link rel="stylesheet" href="/static/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="container-fluid py-2">
+
+      <!-- Page title -->
+      <div class="d-flex align-items-baseline gap-2 mb-2">
+        <h1 class="h5 mb-0">Load Test</h1>
+        <span class="text-muted small">Core throughput tester</span>
+      </div>
+
+      <!-- ── Compact controls ── -->
+      <div class="card mb-3">
+        <div class="card-body lt-ctrl-body">
+
+          <!-- Sync row -->
+          <div class="lt-ctrl-row">
+            <i data-lucide="zap" class="lt-icon-sm text-warning flex-shrink-0"></i>
+            <strong class="lt-ctrl-title">Sync</strong>
+            <span class="badge bg-secondary" id="lt-sync-badge">Stopped</span>
+            <span class="lt-vsep"></span>
+            <span class="lt-ctrl-lbl">RPS</span>
+            <div class="btn-group btn-group-sm" id="lt-sync-rps-group">
+              <button class="btn btn-outline-secondary lt-sel-btn lt-sel-active" data-rps="10">10</button>
+              <button class="btn btn-outline-secondary lt-sel-btn" data-rps="100">100</button>
+              <button class="btn btn-outline-secondary lt-sel-btn" data-rps="1000">1k</button>
+              <button class="btn btn-outline-secondary lt-sel-btn" data-rps="10000">10k</button>
+            </div>
+            <button class="btn btn-sm btn-success" id="lt-sync-toggle" data-action="toggle-sync">
+              <i data-lucide="play" class="lt-icon-sm"></i> Start
+            </button>
+            <span class="lt-vsep"></span>
+            <span class="lt-metric">Sent&nbsp;<b id="lt-s-sent">0</b></span>
+            <span class="lt-metric text-success">OK&nbsp;<b id="lt-s-ok">0</b></span>
+            <span class="lt-metric text-danger">Fail&nbsp;<b id="lt-s-fail">0</b></span>
+            <span class="lt-vsep"></span>
+            <span class="lt-metric">RPS&nbsp;<b class="text-warning" id="lt-s-rps">0</b></span>
+            <span class="lt-metric">Lat&nbsp;<b class="text-info" id="lt-s-lat">—</b></span>
+            <span class="lt-metric text-muted">∞&nbsp;<b id="lt-s-inflight">0</b></span>
+          </div>
+
+          <!-- Async row -->
+          <div class="lt-ctrl-row mt-2 pt-2 lt-ctrl-divider">
+            <i data-lucide="cpu" class="lt-icon-sm text-info flex-shrink-0"></i>
+            <strong class="lt-ctrl-title">Async</strong>
+            <span class="badge bg-secondary" id="lt-async-badge">Stopped</span>
+            <span class="lt-vsep"></span>
+            <span class="lt-ctrl-lbl">Jobs/s</span>
+            <div class="btn-group btn-group-sm" id="lt-async-rate-group">
+              <button class="btn btn-outline-secondary lt-sel-btn lt-sel-active" data-rate="1">1</button>
+              <button class="btn btn-outline-secondary lt-sel-btn" data-rate="5">5</button>
+              <button class="btn btn-outline-secondary lt-sel-btn" data-rate="10">10</button>
+              <button class="btn btn-outline-secondary lt-sel-btn" data-rate="50">50</button>
+            </div>
+            <span class="lt-ctrl-lbl">Intensity</span>
+            <div class="btn-group btn-group-sm" id="lt-async-int-group">
+              <button class="btn btn-outline-secondary lt-sel-btn lt-sel-active" data-intensity="1">L</button>
+              <button class="btn btn-outline-secondary lt-sel-btn" data-intensity="2">M</button>
+              <button class="btn btn-outline-secondary lt-sel-btn" data-intensity="3">H</button>
+            </div>
+            <button class="btn btn-sm btn-info text-white" id="lt-async-toggle" data-action="toggle-async">
+              <i data-lucide="play" class="lt-icon-sm"></i> Start
+            </button>
+            <span class="lt-vsep"></span>
+            <span class="lt-metric">Sub&nbsp;<b class="text-info" id="lt-a-sub">0</b></span>
+            <span class="lt-metric text-success">Done&nbsp;<b id="lt-a-done">0</b></span>
+            <span class="lt-metric text-warning">Pend&nbsp;<b id="lt-a-pend">0</b></span>
+            <div class="ms-auto d-flex gap-1">
+              <button class="btn btn-sm btn-outline-secondary" data-action="refresh-history" title="Refresh history">
+                <i data-lucide="refresh-cw" class="lt-icon-sm"></i>
+              </button>
+              <button class="btn btn-sm btn-outline-danger" data-action="clear-history" title="Clear all data">
+                <i data-lucide="trash-2" class="lt-icon-sm"></i>
+              </button>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- ── 2 × 2 Chart grid ── -->
+      <div class="row g-3 mb-3">
+
+        <!-- Sync: latency + RPS -->
+        <div class="col-md-6">
+          <div class="card h-100">
+            <div class="card-header lt-chart-header">
+              <i data-lucide="zap" class="lt-icon-sm text-warning"></i>
+              <span>Sync — Latency &amp; RPS</span>
+            </div>
+            <div class="card-body p-1">
+              <div id="lt-chart-sync" class="lt-chart"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Async: queue + throughput -->
+        <div class="col-md-6">
+          <div class="card h-100">
+            <div class="card-header lt-chart-header">
+              <i data-lucide="layers" class="lt-icon-sm text-info"></i>
+              <span>Async — Queue &amp; Throughput</span>
+            </div>
+            <div class="card-body p-1">
+              <div id="lt-chart-async" class="lt-chart"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- CPU: all containers -->
+        <div class="col-md-6">
+          <div class="card h-100">
+            <div class="card-header lt-chart-header">
+              <i data-lucide="activity" class="lt-icon-sm text-danger"></i>
+              <span>CPU — All Containers</span>
+              <span class="badge bg-secondary ms-auto lt-source-badge" id="lt-cpu-source"></span>
+            </div>
+            <div class="card-body p-1">
+              <div id="lt-chart-cpu" class="lt-chart"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Memory: all containers -->
+        <div class="col-md-6">
+          <div class="card h-100">
+            <div class="card-header lt-chart-header">
+              <i data-lucide="server" class="lt-icon-sm" style="color:var(--bs-purple,#6f42c1)"></i>
+              <span>Memory — All Containers</span>
+              <span class="badge bg-secondary ms-auto lt-source-badge" id="lt-mem-source"></span>
+            </div>
+            <div class="card-body p-1">
+              <div id="lt-chart-mem" class="lt-chart"></div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- ── Request history ── -->
+      <div class="card">
+        <div class="card-header py-2 d-flex justify-content-between align-items-center">
+          <div class="d-flex align-items-center gap-2">
+            <i data-lucide="list" class="lt-icon-sm"></i>
+            <span class="small fw-semibold">Request History</span>
+            <span class="badge bg-secondary" id="lt-history-count">0 rows</span>
+          </div>
+          <select class="form-select form-select-sm" id="lt-filter-type" style="width:auto;">
+            <option value="">All</option>
+            <option value="sync">Sync</option>
+            <option value="async">Async</option>
+          </select>
+        </div>
+        <div class="table-responsive lt-history-scroll">
+          <table class="table table-sm table-hover align-middle mb-0">
+            <thead class="table-light lt-thead-sticky">
+              <tr>
+                <th style="width:72px;">#</th>
+                <th style="width:84px;">Type</th>
+                <th style="width:84px;">Status</th>
+                <th style="width:120px;">Latency (ms)</th>
+                <th>Error</th>
+                <th style="width:110px;">Time</th>
+              </tr>
+            </thead>
+            <tbody id="lt-history-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+
+    <script src="/static/js/bootstrap.bundle.min.js"></script>
+    <script src="/assets/vendor/echarts.min.js"></script>
+    <script src="/assets/vendor/dayjs.min.js"></script>
+    <script src="/assets/vendor/lucide.min.js"></script>
+    <script src="index.js"></script>
+  </body>
+</html>

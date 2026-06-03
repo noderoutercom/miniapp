@@ -1,0 +1,19 @@
+{
+  "app_name":    "app_load_test",
+  "display_name": "Load Test",
+  "version":     "1.0.0",
+  "description": "Stress-test core throughput with configurable sync (DB inserts) and async (heavy compute) request rates.",
+  "required_permission": "",
+  "actions": [
+    {
+      "name":         "sync_complete",
+      "display_name": "Sync Request Complete",
+      "description":  "Fired when a sync DB-insert request completes."
+    },
+    {
+      "name":         "async_complete",
+      "display_name": "Async Compute Complete",
+      "description":  "Fired when a heavy-compute async job finishes."
+    }
+  ]
+}
