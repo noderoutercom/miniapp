@@ -1,0 +1,8 @@
+{
+  "app_name": "app_material_master",
+  "display_name": "Material Master",
+  "version": "1.0.0",
+  "description": "Material master data management — SKUs, UoMs, categories, and lifecycle control.",
+  "required_permission": "",
+  "actions": []
+}
