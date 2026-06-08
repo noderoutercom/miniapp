@@ -1,0 +1,35 @@
+{
+  "name":                "app_hello_lua",
+  "display_name":        "Hello CRUD",
+  "version":             "4.0.0",
+  "description":         "Basic CRUD demo — create, read, update, delete on domain_hello_items.",
+  "script":              "main.lua",
+  "required_permission": "",
+  "domains": [
+    {
+      "name": "hello_items",
+      "schema": {
+        "title":  "string",
+        "status": "string",
+        "note":   "string"
+      }
+    }
+  ],
+  "actions": [
+    {
+      "name":         "item_created",
+      "display_name": "Item Created",
+      "description":  "Fired after a new item is inserted."
+    },
+    {
+      "name":         "item_updated",
+      "display_name": "Item Updated",
+      "description":  "Fired after an item is updated."
+    },
+    {
+      "name":         "item_deleted",
+      "display_name": "Item Deleted",
+      "description":  "Fired after an item is soft-deleted."
+    }
+  ]
+}

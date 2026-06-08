@@ -1,0 +1,22 @@
+/*
+ * app_hello_lua/style.css
+ * All classes prefixed hl- to avoid collisions.
+ * Colors use Bootstrap CSS variables for light/dark theme support.
+ */
+
+.hl-status {
+  position: fixed;
+  bottom: 1.25rem;
+  right: 1.25rem;
+  padding: 0.5rem 1rem;
+  border-radius: var(--bs-border-radius);
+  font-size: 0.85rem;
+  font-weight: 500;
+  z-index: 1090;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+  transition: opacity 0.2s;
+}
+
+.hl-status-ok    { background: var(--bs-success-bg-subtle); color: var(--bs-success-text-emphasis); border: 1px solid var(--bs-success-border-subtle); }
+.hl-status-error { background: var(--bs-danger-bg-subtle);  color: var(--bs-danger-text-emphasis);  border: 1px solid var(--bs-danger-border-subtle); }
+.hl-status-info  { background: var(--bs-info-bg-subtle);    color: var(--bs-info-text-emphasis);    border: 1px solid var(--bs-info-border-subtle); }
