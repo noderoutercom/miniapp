@@ -1,0 +1,25 @@
+/* style.css — Inventory Manager (all classes prefixed inv-) */
+
+.inv-dashboard {
+  padding: 1rem;
+  color: var(--bs-body-color);
+  background: var(--bs-body-bg);
+}
+
+.inv-toolbar h5 {
+  font-weight: 600;
+}
+
+/* Status badges */
+.inv-badge-active {
+  background-color: var(--bs-success);
+  color: #fff;
+}
+.inv-badge-inactive {
+  background-color: var(--bs-secondary);
+  color: #fff;
+}
+.inv-badge-archived {
+  background-color: var(--bs-warning);
+  color: #000;
+}

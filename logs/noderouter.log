@@ -1,0 +1,4 @@
+2026/06/10 13:43:25 JWT_SECRET must be at least 32 characters
+2026/06/10 13:43:37 JWT_SECRET must be at least 32 characters
+2026/06/10 13:45:01 No database configured. Set DATABASE_URL or DB_CONFIG_PATH
+2026/06/10 13:51:11 No database configured. Set DATABASE_URL or DB_CONFIG_PATH

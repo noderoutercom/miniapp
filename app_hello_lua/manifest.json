@@ -1,7 +1,7 @@
 {
   "name":                "app_hello_lua",
   "display_name":        "Hello CRUD",
-  "version":             "4.0.0",
+  "version":             "6.0.0",
   "description":         "Basic CRUD demo — create, read, update, delete on domain_hello_items.",
   "script":              "main.lua",
   "required_permission": "",
@@ -12,6 +12,16 @@
         "title":  "string",
         "status": "string",
         "note":   "string"
+      }
+    },
+    {
+      "name": "hello_item_details",
+      "schema": {
+        "item_id":     "string",
+        "description": "string",
+        "priority":    "string",
+        "due_date":    "string",
+        "tags":        "string"
       }
     }
   ],
@@ -30,6 +40,11 @@
       "name":         "item_deleted",
       "display_name": "Item Deleted",
       "description":  "Fired after an item is soft-deleted."
+    },
+    {
+      "name":         "item_detail_saved",
+      "display_name": "Item Detail Saved",
+      "description":  "Fired after an item detail record is created or updated."
     }
   ]
 }

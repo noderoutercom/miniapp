@@ -4,6 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Hello CRUD</title>
+    <!-- v5 -->
     <link rel="stylesheet" href="/static/css/bootstrap.min.css" />
     <link rel="stylesheet" href="style.css" />
   </head>
@@ -29,7 +30,7 @@
                 <th>Title</th>
                 <th style="width:110px">Status</th>
                 <th>Note</th>
-                <th style="width:80px"></th>
+                <th style="width:110px"></th>
               </tr>
             </thead>
             <tbody id="hl-tbody">
@@ -73,6 +74,31 @@
               <label class="form-label small fw-semibold">Note</label>
               <textarea class="form-control" id="hl-edit-note" rows="2" placeholder="Optional note"></textarea>
             </div>
+            <hr class="my-3" />
+            <p class="hl-domain-label mb-2">domain_hello_item_details</p>
+            <div class="mb-3">
+              <label class="form-label small fw-semibold">Description</label>
+              <textarea class="form-control" id="hl-edit-desc" rows="2" placeholder="Full description…"></textarea>
+            </div>
+            <div class="row g-2 mb-3">
+              <div class="col-6">
+                <label class="form-label small fw-semibold">Priority</label>
+                <select class="form-select" id="hl-edit-priority">
+                  <option value="">— none —</option>
+                  <option value="low">Low</option>
+                  <option value="medium">Medium</option>
+                  <option value="high">High</option>
+                </select>
+              </div>
+              <div class="col-6">
+                <label class="form-label small fw-semibold">Due Date</label>
+                <input type="date" class="form-control" id="hl-edit-due" />
+              </div>
+            </div>
+            <div class="mb-2">
+              <label class="form-label small fw-semibold">Tags</label>
+              <input type="text" class="form-control" id="hl-edit-tags" placeholder="e.g. urgent, backend" />
+            </div>
             <div id="hl-modal-error" class="text-danger small d-none"></div>
           </div>
           <div class="modal-footer">
@@ -94,6 +120,64 @@
             <button class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
           </div>
         </div>
+      </div>
+    </div>
+
+    <!-- Item Detail offcanvas -->
+    <div class="offcanvas offcanvas-end" tabindex="-1" id="hl-detail" style="width:380px">
+      <div class="offcanvas-header border-bottom">
+        <h5 class="offcanvas-title fw-semibold">Item Details</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="offcanvas"></button>
+      </div>
+      <div class="offcanvas-body d-flex flex-column gap-3">
+
+        <!-- ── domain_hello_items (read-only summary) ── -->
+        <div>
+          <p class="hl-domain-label">domain_hello_items</p>
+          <dl class="hl-detail-dl">
+            <dt>Title</dt>   <dd id="hl-detail-title">—</dd>
+            <dt>Status</dt>  <dd id="hl-detail-status">—</dd>
+            <dt>Note</dt>    <dd id="hl-detail-note">—</dd>
+            <dt>ID</dt>      <dd id="hl-detail-id" class="font-monospace hl-detail-id">—</dd>
+            <dt>Created</dt> <dd id="hl-detail-created">—</dd>
+            <dt>Updated</dt> <dd id="hl-detail-updated">—</dd>
+          </dl>
+          <div class="d-flex gap-2 mt-2">
+            <button class="btn btn-outline-primary btn-sm" data-action="detail-edit">Edit Item</button>
+            <button class="btn btn-outline-danger btn-sm" data-action="detail-delete">Delete</button>
+          </div>
+        </div>
+
+        <hr class="my-0" />
+
+        <!-- ── domain_hello_item_details (editable) ── -->
+        <div>
+          <p class="hl-domain-label">domain_hello_item_details</p>
+          <div class="mb-2">
+            <label class="form-label small fw-semibold">Description</label>
+            <textarea class="form-control form-control-sm" id="hl-det-desc" rows="3" placeholder="Full description…"></textarea>
+          </div>
+          <div class="mb-2">
+            <label class="form-label small fw-semibold">Priority</label>
+            <select class="form-select form-select-sm" id="hl-det-priority">
+              <option value="">— none —</option>
+              <option value="low">Low</option>
+              <option value="medium">Medium</option>
+              <option value="high">High</option>
+            </select>
+          </div>
+          <div class="mb-2">
+            <label class="form-label small fw-semibold">Due Date</label>
+            <input type="date" class="form-control form-control-sm" id="hl-det-due" />
+          </div>
+          <div class="mb-3">
+            <label class="form-label small fw-semibold">Tags</label>
+            <input type="text" class="form-control form-control-sm" id="hl-det-tags" placeholder="e.g. urgent, backend" />
+          </div>
+          <button class="btn btn-primary btn-sm" data-action="save-detail">Save Details</button>
+          <div id="hl-detail-error" class="text-danger small mt-2 d-none"></div>
+        </div>
+
       </div>
     </div>
 

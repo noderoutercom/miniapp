@@ -6,21 +6,40 @@
 
   var _modal    = null;
   var _delModal = null;
+  var _detailOC = null;
   var _deleteId = null;
+  var _viewedId = null;
 
-  // ── Bootstrap modals ──────────────────────────────────────────────────────
+  // ── Safe DOM helpers ──────────────────────────────────────────────────────
+  // All use getElementById so they work regardless of where root is in the DOM.
+  // Null-safe: never throw if an element doesn't exist.
+
+  function el(id)          { return document.getElementById(id); }
+  function setVal(id, v)   { var e = el(id); if (e) e.value       = v; }
+  function getVal(id)      { var e = el(id); return e ? e.value   : ""; }
+  function setText(id, v)  { var e = el(id); if (e) e.textContent = v; }
+  function setHtml(id, v)  { var e = el(id); if (e) e.innerHTML   = v; }
+  function hide(id)        { var e = el(id); if (e) e.classList.add("d-none"); }
+  function show(id)        { var e = el(id); if (e) e.classList.remove("d-none"); }
+
+  // ── Bootstrap overlay getters ─────────────────────────────────────────────
 
   function getModal() {
-    if (!_modal) _modal = new bootstrap.Modal(root.querySelector("#hl-modal"));
+    if (!_modal) _modal = new bootstrap.Modal(el("hl-modal"));
     return _modal;
   }
 
   function getDelModal() {
-    if (!_delModal) _delModal = new bootstrap.Modal(root.querySelector("#hl-del-modal"));
+    if (!_delModal) _delModal = new bootstrap.Modal(el("hl-del-modal"));
     return _delModal;
   }
 
-  // ── Utilities ──────────────────────────────────────────────────────────────
+  function getDetailOC() {
+    if (!_detailOC) _detailOC = new bootstrap.Offcanvas(el("hl-detail"));
+    return _detailOC;
+  }
+
+  // ── Utilities ─────────────────────────────────────────────────────────────
 
   function esc(s) {
     return String(s ?? "")
@@ -28,17 +47,22 @@
       .replace(/>/g, "&gt;").replace(/"/g, "&quot;");
   }
 
-  function status(msg, type) {
-    var el = root.querySelector("#hl-status");
-    if (!el) return;
-    el.textContent = msg;
-    el.className = "hl-status hl-status-" + (type || "info");
-    el.classList.remove("d-none");
-    clearTimeout(el._timer);
-    el._timer = setTimeout(function () { el.classList.add("d-none"); }, 3000);
+  function fmtDate(s) {
+    if (!s) return "—";
+    try { return new Date(s).toLocaleString(); } catch (_) { return s; }
   }
 
-  // ── API ────────────────────────────────────────────────────────────────────
+  function status(msg, type) {
+    var s = el("hl-status");
+    if (!s) return;
+    s.textContent = msg;
+    s.className = "hl-status hl-status-" + (type || "info");
+    s.classList.remove("d-none");
+    clearTimeout(s._timer);
+    s._timer = setTimeout(function () { s.classList.add("d-none"); }, 3000);
+  }
+
+  // ── API ───────────────────────────────────────────────────────────────────
 
   async function call(payload) {
     var res  = await fetch("/api/sync/" + APP, {
@@ -51,7 +75,7 @@
     return data;
   }
 
-  // ── Render ─────────────────────────────────────────────────────────────────
+  // ── Render ────────────────────────────────────────────────────────────────
 
   var STATUS_BADGE = {
     open: '<span class="badge bg-warning text-dark">open</span>',
@@ -62,7 +86,6 @@
     var tbody   = root.querySelector("#hl-tbody");
     var emptyTr = root.querySelector("#hl-empty-row");
 
-    // Remove old data rows (keep empty row template)
     Array.from(tbody.querySelectorAll("tr.hl-row")).forEach(function (r) { r.remove(); });
 
     if (!rows || rows.length === 0) {
@@ -72,21 +95,23 @@
     if (emptyTr) emptyTr.classList.add("d-none");
 
     rows.forEach(function (item) {
-      // payload is a JSON string in the SQLite TEXT column — parse it.
       var p = {};
       try { p = JSON.parse(item.payload || "{}"); } catch (_) {}
 
       var tr = document.createElement("tr");
-      tr.className = "hl-row";
-      tr.dataset.id     = item.id;
-      tr.dataset.title  = p.title  || "";
-      tr.dataset.status = p.status || "open";
-      tr.dataset.note   = p.note   || "";
+      tr.className         = "hl-row";
+      tr.dataset.id        = item.id;
+      tr.dataset.title     = p.title       || "";
+      tr.dataset.status    = p.status      || "open";
+      tr.dataset.note      = p.note        || "";
+      tr.dataset.createdAt = item.created_at || "";
+      tr.dataset.updatedAt = item.updated_at || "";
       tr.innerHTML =
         "<td>" + esc(p.title || "—") + "</td>" +
         "<td>" + (STATUS_BADGE[p.status] || esc(p.status)) + "</td>" +
         "<td class='text-secondary small'>" + esc(p.note || "") + "</td>" +
         "<td class='text-end'>" +
+          "<button class='btn btn-link btn-sm py-0 px-1' data-action='view-row'>View</button>" +
           "<button class='btn btn-link btn-sm py-0 px-1' data-action='edit-row'>Edit</button>" +
           "<button class='btn btn-link btn-sm py-0 px-1 text-danger' data-action='delete-row'>Del</button>" +
         "</td>";
@@ -103,49 +128,122 @@
       .catch(function (err) { status(err.message, "error"); });
   }
 
-  // ── Modal helpers ──────────────────────────────────────────────────────────
+  // ── Detail offcanvas ──────────────────────────────────────────────────────
+
+  function fillDetail(id, title, st, note, createdAt, updatedAt) {
+    setText("hl-detail-id",      id    || "—");
+    setText("hl-detail-title",   title || "—");
+    setHtml("hl-detail-status",  STATUS_BADGE[st] || esc(st) || "—");
+    setText("hl-detail-note",    note  || "—");
+    setText("hl-detail-created", fmtDate(createdAt));
+    setText("hl-detail-updated", fmtDate(updatedAt));
+    hide("hl-detail-error");
+  }
+
+  function fillDetailForm(p) {
+    setVal("hl-det-desc",     p.description || "");
+    setVal("hl-det-priority", p.priority    || "");
+    setVal("hl-det-due",      p.due_date    || "");
+    setVal("hl-det-tags",     p.tags        || "");
+  }
+
+  function viewDetail(row) {
+    _viewedId = row.dataset.id;
+    fillDetail(
+      row.dataset.id, row.dataset.title, row.dataset.status,
+      row.dataset.note, row.dataset.createdAt, row.dataset.updatedAt
+    );
+    fillDetailForm({});
+    getDetailOC().show();
+
+    call({ action: "get", id: _viewedId })
+      .then(function (data) {
+        if (!data.ok || !data.item) return;
+        var p = {};
+        try { p = JSON.parse(data.item.payload || "{}"); } catch (_) {}
+        fillDetail(data.item.id, p.title, p.status, p.note, data.item.created_at, data.item.updated_at);
+      })
+      .catch(function () {});
+
+    call({ action: "get_detail", item_id: _viewedId })
+      .then(function (data) {
+        if (!data.ok || !data.detail) return;
+        var p = {};
+        try { p = JSON.parse(data.detail.payload || "{}"); } catch (_) {}
+        fillDetailForm(p);
+      })
+      .catch(function () {});
+  }
+
+  // ── Modal helpers ─────────────────────────────────────────────────────────
+
+  function clearDetailFields() {
+    setVal("hl-edit-desc",     "");
+    setVal("hl-edit-priority", "");
+    setVal("hl-edit-due",      "");
+    setVal("hl-edit-tags",     "");
+  }
 
   function openCreate() {
-    var m = root.querySelector("#hl-modal");
-    m.querySelector("#hl-modal-title").textContent = "New Item";
-    m.querySelector("#hl-edit-id").value    = "";
-    m.querySelector("#hl-edit-title").value = "";
-    m.querySelector("#hl-edit-status").value = "open";
-    m.querySelector("#hl-edit-note").value  = "";
-    m.querySelector("#hl-modal-error").classList.add("d-none");
+    setText("hl-modal-title", "New Item");
+    setVal("hl-edit-id",      "");
+    setVal("hl-edit-title",   "");
+    setVal("hl-edit-status",  "open");
+    setVal("hl-edit-note",    "");
+    hide("hl-modal-error");
+    clearDetailFields();
     getModal().show();
-    setTimeout(function () { m.querySelector("#hl-edit-title").focus(); }, 300);
+    setTimeout(function () { var e = el("hl-edit-title"); if (e) e.focus(); }, 300);
   }
 
   function openEdit(row) {
-    var m = root.querySelector("#hl-modal");
-    m.querySelector("#hl-modal-title").textContent = "Edit Item";
-    m.querySelector("#hl-edit-id").value     = row.dataset.id;
-    m.querySelector("#hl-edit-title").value  = row.dataset.title;
-    m.querySelector("#hl-edit-status").value = row.dataset.status;
-    m.querySelector("#hl-edit-note").value   = row.dataset.note;
-    m.querySelector("#hl-modal-error").classList.add("d-none");
+    setText("hl-modal-title", "Edit Item");
+    setVal("hl-edit-id",     row.dataset.id);
+    setVal("hl-edit-title",  row.dataset.title);
+    setVal("hl-edit-status", row.dataset.status);
+    setVal("hl-edit-note",   row.dataset.note);
+    hide("hl-modal-error");
+    clearDetailFields();
     getModal().show();
-    setTimeout(function () { m.querySelector("#hl-edit-title").focus(); }, 300);
+    setTimeout(function () { var e = el("hl-edit-title"); if (e) e.focus(); }, 300);
+
+    call({ action: "get_detail", item_id: row.dataset.id })
+      .then(function (data) {
+        if (!data.ok || !data.detail) return;
+        var p = {};
+        try { p = JSON.parse(data.detail.payload || "{}"); } catch (_) {}
+        setVal("hl-edit-desc",     p.description || "");
+        setVal("hl-edit-priority", p.priority    || "");
+        setVal("hl-edit-due",      p.due_date    || "");
+        setVal("hl-edit-tags",     p.tags        || "");
+      })
+      .catch(function () {});
   }
 
   function saveItem() {
-    var m      = root.querySelector("#hl-modal");
-    var id     = m.querySelector("#hl-edit-id").value.trim();
-    var title  = m.querySelector("#hl-edit-title").value.trim();
-    var st     = m.querySelector("#hl-edit-status").value;
-    var note   = m.querySelector("#hl-edit-note").value.trim();
-    var errEl  = m.querySelector("#hl-modal-error");
+    var id       = getVal("hl-edit-id").trim();
+    var title    = getVal("hl-edit-title").trim();
+    var st       = getVal("hl-edit-status");
+    var note     = getVal("hl-edit-note").trim();
+    var desc     = getVal("hl-edit-desc").trim();
+    var priority = getVal("hl-edit-priority");
+    var dueDate  = getVal("hl-edit-due");
+    var tags     = getVal("hl-edit-tags").trim();
+    var errEl    = el("hl-modal-error");
 
     if (!title) {
-      errEl.textContent = "Title is required.";
-      errEl.classList.remove("d-none");
+      if (errEl) { errEl.textContent = "Title is required."; show("hl-modal-error"); }
       return;
     }
-    errEl.classList.add("d-none");
+    hide("hl-modal-error");
 
+    // Detail fields are sent in the same payload — Lua writes both domains
+    // in one execute() call → one atomic ledger event.
     var action  = id ? "update" : "create";
-    var payload = { action: action, title: title, status: st, note: note };
+    var payload = {
+      action: action, title: title, status: st, note: note,
+      description: desc, priority: priority, due_date: dueDate, tags: tags,
+    };
     if (id) payload.id = id;
 
     call(payload)
@@ -156,12 +254,11 @@
         loadList();
       })
       .catch(function (err) {
-        errEl.textContent = err.message;
-        errEl.classList.remove("d-none");
+        if (errEl) { errEl.textContent = err.message; show("hl-modal-error"); }
       });
   }
 
-  // ── Event delegation ───────────────────────────────────────────────────────
+  // ── Event delegation ──────────────────────────────────────────────────────
 
   root.addEventListener("click", function (e) {
     var btn = e.target.closest("[data-action]");
@@ -177,9 +274,55 @@
         saveItem();
         break;
 
+      case "save-detail": {
+        if (!_viewedId) break;
+        hide("hl-detail-error");
+        var detPayload = {
+          action:      "save_detail",
+          item_id:     _viewedId,
+          description: getVal("hl-det-desc").trim(),
+          priority:    getVal("hl-det-priority"),
+          due_date:    getVal("hl-det-due"),
+          tags:        getVal("hl-det-tags").trim(),
+        };
+        call(detPayload)
+          .then(function (data) {
+            if (!data.ok) throw new Error(data.error || "failed");
+            status("Details saved.", "ok");
+          })
+          .catch(function (err) {
+            setText("hl-detail-error", err.message);
+            show("hl-detail-error");
+          });
+        break;
+      }
+
+      case "view-row": {
+        var row = btn.closest("tr.hl-row");
+        if (row) viewDetail(row);
+        break;
+      }
+
       case "edit-row": {
         var row = btn.closest("tr.hl-row");
         if (row) openEdit(row);
+        break;
+      }
+
+      case "detail-edit": {
+        getDetailOC().hide();
+        var editRow = root.querySelector("tr.hl-row[data-id='" + _viewedId + "']");
+        if (editRow) openEdit(editRow);
+        break;
+      }
+
+      case "detail-delete": {
+        if (!_viewedId) break;
+        var delRow = root.querySelector("tr.hl-row[data-id='" + _viewedId + "']");
+        _deleteId = _viewedId;
+        setText("hl-del-title", (delRow && delRow.dataset.title) || "this item");
+        getDetailOC().hide();
+        getDelModal().show();
         break;
       }
 
@@ -187,7 +330,7 @@
         var row = btn.closest("tr.hl-row");
         if (!row) break;
         _deleteId = row.dataset.id;
-        root.querySelector("#hl-del-title").textContent = row.dataset.title || "this item";
+        setText("hl-del-title", row.dataset.title || "this item");
         getDelModal().show();
         break;
       }
@@ -207,28 +350,27 @@
     }
   });
 
-  // ── Real-time events from Lua ──────────────────────────────────────────────
+  // ── Real-time events from Lua ─────────────────────────────────────────────
 
   window.addEventListener("adminws:edge_event", function (e) {
     var d = e.detail;
     if (!d || d.app_id !== APP) return;
-    // Reload list on any CRUD event from another session or dispatch.
     if (d.event === "item_created" || d.event === "item_updated" || d.event === "item_deleted") {
       loadList();
     }
   });
 
-  // ── Enter key in modal ─────────────────────────────────────────────────────
+  // ── Enter key in modal ────────────────────────────────────────────────────
 
-  root.querySelector("#hl-modal") && root.querySelector("#hl-modal")
-    .addEventListener("keydown", function (e) {
-      if (e.key === "Enter" && e.target.tagName !== "TEXTAREA") {
-        e.preventDefault();
-        saveItem();
-      }
-    });
+  var _modalEl = el("hl-modal");
+  if (_modalEl) _modalEl.addEventListener("keydown", function (e) {
+    if (e.key === "Enter" && e.target.tagName !== "TEXTAREA") {
+      e.preventDefault();
+      saveItem();
+    }
+  });
 
-  // ── Init ───────────────────────────────────────────────────────────────────
+  // ── Init ──────────────────────────────────────────────────────────────────
 
   loadList();
 

@@ -1,0 +1,13 @@
+{
+  "servers": {
+    "noderouter-core": {
+      "type": "stdio",
+      "command": "/Volumes/genie/development/noderouter-project/sorai-project/sorai-core/noderouter-core",
+      "args": ["-mcp"],
+      "cwd": "/Volumes/genie/development/noderouter-project/sorai-project/sorai-core",
+      "env": {
+        "JWT_SECRET": "Hhdqy381khahd12dfkahfakhf91271972hkahkhdkahdakdhkdada4343"
+      }
+    }
+  }
+}
