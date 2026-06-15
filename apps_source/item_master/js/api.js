@@ -1,5 +1,5 @@
-// lib/api.js — sync/async wrappers for inventory_manager
-const APP = "inventory_manager";
+// js/api.js — sync wrapper for item_master
+const APP = "item_master";
 
 export async function sync(action, params) {
   const res = await fetch("/api/sync/" + APP, {
