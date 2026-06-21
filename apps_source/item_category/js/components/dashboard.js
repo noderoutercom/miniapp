@@ -140,68 +140,33 @@ export async function mount(root) {
     }).filter(function(r) { return r.category_code || r.name; });
   }
 
-  function parseCsvText(text) {
-    const lines = text.split(/\r?\n/);
-    function parseLine(line) {
-      const fields = [];
-      let i = 0;
-      while (i <= line.length) {
-        if (line[i] === '"') {
-          let val = ""; i++;
-          while (i < line.length) {
-            if (line[i] === '"' && line[i + 1] === '"') { val += '"'; i += 2; }
-            else if (line[i] === '"') { i++; break; }
-            else { val += line[i++]; }
-          }
-          fields.push(val);
-          if (line[i] === ",") i++;
-        } else {
-          const end = line.indexOf(",", i);
-          if (end === -1) { fields.push(line.slice(i)); break; }
-          fields.push(line.slice(i, end));
-          i = end + 1;
-        }
-      }
-      return fields;
-    }
-    if (!lines.length || !lines[0].trim()) return [];
-    const headers = parseLine(lines[0]);
-    const rows = [];
-    for (let i = 1; i < lines.length; i++) {
-      if (!lines[i].trim()) continue;
-      const vals = parseLine(lines[i]);
-      const obj = {};
-      headers.forEach(function(h, idx) { obj[h] = vals[idx] !== undefined ? vals[idx] : ""; });
-      rows.push(obj);
-    }
-    return rows;
-  }
-
   function parseFile(file) {
+    const ext = file.name.split(".").pop().toLowerCase();
+    if (ext === "csv") {
+      return new Promise(function(resolve, reject) {
+        Papa.parse(file, {
+          header: true,
+          skipEmptyLines: true,
+          complete: function(result) {
+            try { resolve(mapRows(result.data)); }
+            catch (err) { reject(err); }
+          },
+          error: function(err) { reject(new Error(err.message)); },
+        });
+      });
+    }
     return new Promise(function(resolve, reject) {
-      const ext = file.name.split(".").pop().toLowerCase();
       const reader = new FileReader();
-
       reader.onerror = function() { reject(new Error("File read failed")); };
-
-      if (ext === "csv") {
-        reader.onload = function(e) {
-          try {
-            resolve(mapRows(parseCsvText(e.target.result)));
-          } catch (err) { reject(err); }
-        };
-        reader.readAsText(file);
-      } else {
-        reader.onload = function(e) {
-          try {
-            const wb   = XLSX.read(new Uint8Array(e.target.result), { type: "array" });
-            const ws   = wb.Sheets[wb.SheetNames[0]];
-            const data = XLSX.utils.sheet_to_json(ws, { defval: "" });
-            resolve(mapRows(data));
-          } catch (err) { reject(err); }
-        };
-        reader.readAsArrayBuffer(file);
-      }
+      reader.onload = function(e) {
+        try {
+          const wb   = XLSX.read(new Uint8Array(e.target.result), { type: "array" });
+          const ws   = wb.Sheets[wb.SheetNames[0]];
+          const data = XLSX.utils.sheet_to_json(ws, { defval: "" });
+          resolve(mapRows(data));
+        } catch (err) { reject(err); }
+      };
+      reader.readAsArrayBuffer(file);
     });
   }
 
