@@ -1,4 +1,4 @@
-// js/router.js — simple hash-based screen router
+// js/router.js — hash-based screen router
 const _screens = {};
 let _root = null;
 
@@ -14,16 +14,16 @@ export function start(rootEl) {
 
 export function navigate(name, state) {
   if (state) {
-    sessionStorage.setItem("im-nav-state", JSON.stringify(state));
+    sessionStorage.setItem("ic-nav-state", JSON.stringify(state));
   } else {
-    sessionStorage.removeItem("im-nav-state");
+    sessionStorage.removeItem("ic-nav-state");
   }
   window.location.hash = name;
 }
 
 export function getNavState() {
   try {
-    const raw = sessionStorage.getItem("im-nav-state");
+    const raw = sessionStorage.getItem("ic-nav-state");
     return raw ? JSON.parse(raw) : null;
   } catch {
     return null;

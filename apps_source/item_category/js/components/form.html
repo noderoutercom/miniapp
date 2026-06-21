@@ -1,0 +1,44 @@
+<!-- components/form.html — Item Category create/edit form -->
+<div class="ic-form-screen">
+
+  <!-- Header bar -->
+  <div class="ic-form-header d-flex justify-content-between align-items-center mb-3">
+    <div class="d-flex align-items-center gap-2">
+      <button class="btn btn-sm btn-outline-secondary" id="ic-btn-back">&#8592; Back</button>
+      <h6 class="mb-0" id="ic-form-title">New Category</h6>
+    </div>
+    <div class="d-flex gap-2">
+      <button class="btn btn-sm btn-success" id="ic-btn-save">Save</button>
+      <button class="btn btn-sm btn-secondary" id="ic-btn-cancel">Cancel</button>
+    </div>
+  </div>
+
+  <!-- Hidden state -->
+  <input type="hidden" id="ic-f-id" />
+
+  <!-- Fields -->
+  <div class="row g-3">
+    <div class="col-md-3">
+      <label class="form-label form-label-sm">Category Code <span class="text-danger">*</span></label>
+      <input id="ic-f-code" type="text" class="form-control form-control-sm"
+             placeholder="e.g. SEMI" maxlength="20" />
+      <div class="ic-field-hint">Uppercase A–Z, 0–9, _&nbsp; Max 20 chars.</div>
+      <div class="invalid-feedback" id="ic-code-err"></div>
+    </div>
+
+    <div class="col-md-5">
+      <label class="form-label form-label-sm">Category Name <span class="text-danger">*</span></label>
+      <input id="ic-f-name" type="text" class="form-control form-control-sm"
+             placeholder="e.g. Semiconductors" maxlength="100" />
+    </div>
+
+    <div class="col-md-4">
+      <label class="form-label form-label-sm">Parent Category</label>
+      <select id="ic-f-parent" class="form-select form-select-sm">
+        <option value="">— None (top-level) —</option>
+      </select>
+      <div class="ic-field-hint">Leave blank to create a top-level category.</div>
+    </div>
+  </div>
+
+</div>

@@ -233,3 +233,18 @@ To manage data density without overwhelming the user, fields are separated into 
 
 
 * **Dirty State Guard:** A confirmation modal prompts the user if they attempt to navigate away from the form with unsaved changes.
+
+# Change Requests
+1. Add the category query for autocompleted dropdown
+{
+      "name":   "list_categories",
+      "type":   "query",
+      "sql":    "SELECT c.id, c.category_code, c.name, c.parent_id, p.name AS parent_name, (SELECT COUNT(*)::integer FROM item_category.item_categories ch WHERE ch.parent_id = c.id) AS child_count FROM item_category.item_categories c LEFT JOIN item_category.item_categories p ON p.id = c.parent_id WHERE ($1::text IS NULL OR c.category_code ILIKE '%' || $1 || '%' OR c.name ILIKE '%' || $1 || '%') ORDER BY p.name NULLS FIRST, c.name LIMIT $2::integer OFFSET $3::integer",
+      "params": [
+        { "name": "search",    "type": "text",    "nullable": true },
+        { "name": "page_size", "type": "integer" },
+        { "name": "offset",    "type": "integer" }
+      ]
+    },
+
+2. The import exce/csv file to create the items bundle.

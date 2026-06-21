@@ -2,9 +2,9 @@
   "servers": {
     "noderouter-core": {
       "type": "stdio",
-      "command": "/Volumes/genie/development/noderouter-project/sorai-project/sorai-core/noderouter-core",
+      "command": "/Volumes/genie/development/notoru-node/notoru-core/notoru",
       "args": ["-mcp"],
-      "cwd": "/Volumes/genie/development/noderouter-project/sorai-project/sorai-core",
+      "cwd": "/Volumes/genie/development/notoru-node/notoru-core",
       "env": {
         "JWT_SECRET": "Hhdqy381khahd12dfkahfakhf91271972hkahkhdkahdakdhkdada4343"
       }

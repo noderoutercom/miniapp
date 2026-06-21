@@ -1,0 +1,141 @@
+<!-- components/dashboard.html — Item Category Master list screen -->
+<div class="ic-dashboard">
+
+  <!-- Toolbar -->
+  <div class="ic-toolbar d-flex justify-content-between align-items-center mb-3">
+    <h5 class="mb-0">Item Category Master</h5>
+    <div class="d-flex gap-2">
+      <button class="btn btn-sm btn-outline-secondary" id="ic-btn-import">&#8593; Import</button>
+      <button class="btn btn-sm btn-primary" id="ic-btn-new">+ New Category</button>
+    </div>
+  </div>
+
+  <!-- Search bar -->
+  <div class="ic-filter-panel card mb-3">
+    <div class="card-body py-2">
+      <div class="row g-2 align-items-end">
+        <div class="col-md-6">
+          <input id="ic-filter-search" type="text" class="form-control form-control-sm"
+                 placeholder="Search code or name…" />
+        </div>
+        <div class="col-md-6 d-flex gap-2">
+          <button class="btn btn-sm btn-primary" id="ic-btn-search">Search</button>
+          <button class="btn btn-sm btn-outline-secondary" id="ic-btn-refresh" title="Refresh">&#8635;</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Data grid -->
+  <div class="table-responsive">
+    <table class="table table-sm table-hover ic-table">
+      <thead class="table-light">
+        <tr>
+          <th>Code</th>
+          <th>Name</th>
+          <th>Parent</th>
+          <th class="text-end">Sub-cats</th>
+          <th style="width:120px">Actions</th>
+        </tr>
+      </thead>
+      <tbody id="ic-tbody"></tbody>
+    </table>
+  </div>
+
+  <div id="ic-empty" class="text-muted text-center py-4 d-none">No categories found.</div>
+  <div id="ic-loading" class="text-center py-3 d-none">
+    <span class="spinner-border spinner-border-sm me-1"></span> Loading…
+  </div>
+
+  <!-- Pagination -->
+  <div class="d-flex justify-content-between align-items-center mt-2">
+    <small class="text-muted" id="ic-page-info"></small>
+    <div class="d-flex gap-1">
+      <button class="btn btn-sm btn-outline-secondary" id="ic-btn-prev">‹ Prev</button>
+      <button class="btn btn-sm btn-outline-secondary" id="ic-btn-next">Next ›</button>
+    </div>
+  </div>
+
+  <!-- Delete confirmation modal -->
+  <div class="modal fade" id="ic-delete-modal" tabindex="-1">
+    <div class="modal-dialog modal-sm">
+      <div class="modal-content">
+        <div class="modal-header py-2">
+          <h6 class="modal-title">Delete Category</h6>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <p class="mb-1">Delete category <strong id="ic-modal-code"></strong>?</p>
+          <small class="text-muted">This cannot be undone.</small>
+          <input type="hidden" id="ic-modal-delete-id" />
+        </div>
+        <div class="modal-footer py-2">
+          <button class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button class="btn btn-sm btn-danger" id="ic-modal-btn-delete">Delete</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Import modal -->
+  <div class="modal fade" id="ic-import-modal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <div class="modal-header py-2">
+          <h6 class="modal-title">Import Categories</h6>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+
+          <!-- Step 1: pick file -->
+          <div id="ic-imp-step-pick">
+            <p class="mb-2 small text-muted">
+              Upload an Excel (.xlsx) or CSV file. Required columns:
+              <code>category_code</code>, <code>name</code>.
+              Optional: <code>parent_code</code>.
+              Duplicate codes are skipped (not overwritten).
+            </p>
+            <div class="d-flex gap-2 align-items-center">
+              <input type="file" class="form-control form-control-sm" id="ic-imp-file"
+                     accept=".xlsx,.csv" />
+              <button class="btn btn-sm btn-outline-secondary text-nowrap" id="ic-imp-btn-template">
+                &#8595; Template
+              </button>
+            </div>
+          </div>
+
+          <!-- Step 2: preview -->
+          <div id="ic-imp-step-preview" class="d-none mt-3">
+            <p class="mb-2 small"><strong id="ic-imp-row-count"></strong> rows parsed. Review before importing.</p>
+            <div class="table-responsive ic-imp-preview-scroll">
+              <table class="table table-sm ic-table">
+                <thead class="table-light">
+                  <tr><th>category_code</th><th>name</th><th>parent_code</th></tr>
+                </thead>
+                <tbody id="ic-imp-tbody"></tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Step 3: result -->
+          <div id="ic-imp-step-result" class="d-none mt-3">
+            <p class="mb-1">
+              <span class="text-success fw-semibold" id="ic-imp-ok"></span>
+              <span class="text-secondary ms-3" id="ic-imp-skipped"></span>
+            </p>
+            <div id="ic-imp-errors-wrap" class="d-none">
+              <p class="text-danger small mb-1 fw-semibold">Row errors:</p>
+              <ul class="small mb-0" id="ic-imp-errors-list"></ul>
+            </div>
+          </div>
+
+        </div>
+        <div class="modal-footer py-2">
+          <button class="btn btn-sm btn-secondary" data-bs-dismiss="modal" id="ic-imp-btn-close">Close</button>
+          <button class="btn btn-sm btn-primary" id="ic-imp-btn-confirm" disabled>Import</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>

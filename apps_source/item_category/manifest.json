@@ -1,0 +1,42 @@
+{
+  "app_name":            "item_category",
+  "display_name":        "Item Category Master",
+  "version":             "1.1.0",
+  "description":         "Reference data module for managing the hierarchical item classification tree used by Item Master.",
+  "required_permission": "",
+
+  "tables": [
+    "CREATE TABLE IF NOT EXISTS public.item_categories (id UUID PRIMARY KEY DEFAULT gen_random_uuid(), category_code VARCHAR(20) UNIQUE NOT NULL, name VARCHAR(100) NOT NULL, parent_id UUID REFERENCES public.item_categories(id))",
+    "CREATE INDEX IF NOT EXISTS idx_ic_parent ON public.item_categories(parent_id)",
+    "INSERT INTO public.item_categories (category_code, name) VALUES ('RAW','Raw Materials'),('ELEC','Electronics'),('MECH','Mechanical Parts'),('CHEM','Chemicals'),('PKG','Packaging'),('FG','Finished Goods') ON CONFLICT (category_code) DO NOTHING"
+  ],
+
+  "actions": [
+    {
+      "name":        "item_category_created",
+      "display_name": "Category Created",
+      "description": "Fired when a new category is created.",
+      "tables": [{ "schema": "public", "table": "item_categories", "access": "write" }]
+    },
+    {
+      "name":        "item_category_updated",
+      "display_name": "Category Updated",
+      "description": "Fired when a category is updated.",
+      "tables": [{ "schema": "public", "table": "item_categories", "access": "write" }]
+    },
+    {
+      "name":        "item_category_deleted",
+      "display_name": "Category Deleted",
+      "description": "Fired when a category is deleted.",
+      "tables": [{ "schema": "public", "table": "item_categories", "access": "write" }]
+    },
+    {
+      "name":        "item_category_imported",
+      "display_name": "Categories Imported",
+      "description": "Fired after a bulk import completes.",
+      "tables": [{ "schema": "public", "table": "item_categories", "access": "write" }]
+    }
+  ],
+
+  "dependencies": []
+}

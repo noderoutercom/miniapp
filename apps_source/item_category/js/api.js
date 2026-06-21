@@ -1,5 +1,5 @@
-// js/api.js — sync wrapper for item_master
-const APP = "item_master";
+// js/api.js — sync wrapper for item_category
+const APP = "item_category";
 
 export async function sync(action, params) {
   const res = await fetch("/api/sync/" + APP, {
@@ -9,5 +9,6 @@ export async function sync(action, params) {
   });
   const data = await res.json();
   if (!res.ok) throw new Error(data.error || "HTTP " + res.status);
+  if (data.error) throw new Error(data.error);
   return data;
 }
